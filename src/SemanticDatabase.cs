@@ -49,7 +49,7 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
             }
 
             var parts = line.Split(';');
-            if (parts.Length != 3 || tags is not null && tags.Any(t => !parts[0].Contains(t)))
+            if (parts.Length != 3 || tags is not null && !HasAllTags(parts[0], tags))
             {
                 continue;
             }
@@ -85,6 +85,30 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
     public Task RemoveAsync(ICollection<string> tags, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
+    }
+
+    private static bool HasAllTags(ReadOnlySpan<char> tags, ICollection<string> requiredTags)
+    {
+        foreach (var requiredTag in requiredTags)
+        {
+            var found = false;
+
+            foreach (var tag in tags.Split(','))
+            {
+                if (tags[tag] == requiredTag)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private async Task<float[]> GetEmbeddingAsync(string item, CancellationToken cancellationToken = default)
