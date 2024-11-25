@@ -8,6 +8,10 @@ namespace ChatAIze.SemanticIndex;
 
 public sealed class SemanticDatabase(string path, string apiKey, string model = EmbeddingModels.OpenAI.TextEmbedding3Small, int vectorSize = 1536)
 {
+    private const char PropertySeparator = '\u241D';
+
+    private const char TagSeparator = '\u241F';
+
     private readonly OpenAIClient _client = new();
 
     private readonly EmbeddingOptions _options = new(model: model, apiKey: apiKey);
@@ -20,12 +24,12 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
         var magnitude = Math.Sqrt(TensorPrimitives.SumOfSquares(embedding));
         var builder = new StringBuilder();
 
-        builder.AppendJoin(',', tags ?? Enumerable.Empty<string>());
-        builder.Append(';');
-        builder.AppendJoin(',', embedding);
-        builder.Append(';');
+        builder.AppendJoin(TagSeparator, tags ?? Enumerable.Empty<string>());
+        builder.Append(PropertySeparator);
+        builder.AppendJoin(TagSeparator, embedding);
+        builder.Append(PropertySeparator);
         builder.Append(magnitude);
-        builder.Append(';');
+        builder.Append(PropertySeparator);
         builder.Append(item);
 
         using var writer = new StreamWriter(path, append: true);
@@ -48,7 +52,7 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
                 break;
             }
 
-            var parts = line.Split(';');
+            var parts = line.Split(PropertySeparator);
             if (parts.Length != 3 || tags is not null && !HasAllTags(parts[0], tags))
             {
                 continue;
@@ -93,7 +97,7 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
         {
             var found = false;
 
-            foreach (var tag in tags.Split(','))
+            foreach (var tag in tags.Split(TagSeparator))
             {
                 if (tags[tag] == requiredTag)
                 {
@@ -119,7 +123,7 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
 
     private float[] ParseFloatArray(ReadOnlySpan<char> embedding)
     {
-        var parts = embedding.Split(',');
+        var parts = embedding.Split(TagSeparator);
         var result = new float[vectorSize];
         var index = 0;
 
