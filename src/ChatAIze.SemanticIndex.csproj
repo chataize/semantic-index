@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Title>Semantic Index</Title>
     <Product>Semantic Index</Product>
@@ -29,13 +29,10 @@
     </PackageTags>
   </PropertyGroup>
   <ItemGroup>
-    <None
-        Include="icon.png"
-        Pack="true"
-        PackagePath="\" />
-    <None
-        Include="../README.md"
-        Pack="true"
-        PackagePath="" />
+    <None Include="icon.png" Pack="true" PackagePath="\" />
+    <None Include="../README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="ChatAIze.GenerativeCS" Version="0.11.18" />
   </ItemGroup>
 </Project>
