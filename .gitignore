@@ -399,3 +399,6 @@ FodyWeavers.xsd
 
 # DS_Store files
 *.DS_Store
+
+# Database files
+*.db
