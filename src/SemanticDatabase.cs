@@ -20,8 +20,6 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(item);
 
-        item = item.Replace(PropertySeparator, ' ').Replace(TagSeparator, ' ');
-
         var embedding = await GetEmbeddingAsync(item, cancellationToken);
         var magnitude = Math.Sqrt(TensorPrimitives.SumOfSquares(embedding));
         var builder = new StringBuilder();
@@ -32,7 +30,7 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
         builder.Append(PropertySeparator);
         builder.Append(magnitude);
         builder.Append(PropertySeparator);
-        builder.Append(item);
+        builder.Append(Escape(item));
 
         using var writer = new StreamWriter(path, append: true);
         await writer.WriteLineAsync(builder.ToString());
@@ -71,12 +69,12 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
 
             if (results.Count < count)
             {
-                results.Add(similarity, parts[2]);
+                results.Add(similarity, Unescape(parts[2]));
             }
             else if (similarity > results.Keys[^1])
             {
                 results.RemoveAt(results.Count - 1);
-                results.Add(similarity, parts[2]);
+                results.Add(similarity, Unescape(parts[2]));
             }
         }
 
@@ -115,6 +113,16 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
         }
 
         return true;
+    }
+
+    private static string Escape(string value)
+    {
+        return value.Replace(PropertySeparator, ' ').Replace(TagSeparator, ' ').Replace("\r", "\\r").Replace("\n", "\\n");
+    }
+
+    private static string Unescape(string value)
+    {
+        return value.Replace("\\r", "\r").Replace("\\n", "\n");
     }
 
     private async Task<float[]> GetEmbeddingAsync(string item, CancellationToken cancellationToken = default)
