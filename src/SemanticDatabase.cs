@@ -53,7 +53,7 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
             }
 
             var parts = line.Split(PropertySeparator);
-            if (parts.Length != 3 || tags is not null && !HasAllTags(parts[0], tags))
+            if (parts.Length != 4 || tags is not null && !HasAllTags(parts[0], tags))
             {
                 continue;
             }
