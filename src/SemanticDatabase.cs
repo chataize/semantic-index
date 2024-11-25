@@ -1,4 +1,4 @@
-﻿using System.Numerics.Tensors;
+using System.Numerics.Tensors;
 using System.Text;
 using ChatAIze.GenerativeCS.Clients;
 using ChatAIze.GenerativeCS.Constants;
@@ -69,12 +69,12 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
 
             if (results.Count < count)
             {
-                results.Add(similarity, Unescape(parts[2]));
+                results.Add(similarity, Unescape(parts[3]));
             }
             else if (similarity > results.Keys[^1])
             {
                 results.RemoveAt(results.Count - 1);
-                results.Add(similarity, Unescape(parts[2]));
+                results.Add(similarity, Unescape(parts[3]));
             }
         }
 
