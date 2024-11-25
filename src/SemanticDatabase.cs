@@ -18,11 +18,14 @@ public sealed class SemanticDatabase
         ArgumentException.ThrowIfNullOrWhiteSpace(item);
 
         var embedding = await GetEmbeddingAsync(item, cancellationToken);
+        var magnitude = Math.Sqrt(TensorPrimitives.SumOfSquares(embedding));
         var builder = new StringBuilder();
 
         builder.AppendJoin(',', tags ?? Enumerable.Empty<string>());
         builder.Append(';');
         builder.AppendJoin(',', embedding);
+        builder.Append(';');
+        builder.Append(magnitude);
         builder.Append(';');
         builder.Append(item);
 
@@ -33,7 +36,8 @@ public sealed class SemanticDatabase
     public async Task<IList<string>> FindAsync(string query, ICollection<string>? tags = null, int count = 10, CancellationToken cancellationToken = default)
     {
         var queryEmbedding = await GetEmbeddingAsync(query, cancellationToken);
-        var results = new SortedList<float, string>();
+        var queryMagnitude = Math.Sqrt(TensorPrimitives.SumOfSquares(queryEmbedding));
+        var results = new SortedList<double, string>();
 
         using var reader = new StreamReader(Path);
 
@@ -52,11 +56,13 @@ public sealed class SemanticDatabase
             }
 
             var itemEmbedding = parts[1].Split(',').Select(float.Parse).ToArray();
-            var similarity = TensorPrimitives.CosineSimilarity(queryEmbedding, itemEmbedding);
+            var itemMagnitude = float.Parse(parts[2]);
+
+            var similarity = TensorPrimitives.Dot(queryEmbedding, itemEmbedding) / (queryMagnitude * itemMagnitude);
 
             while (results.ContainsKey(similarity))
             {
-                similarity += float.Epsilon;
+                similarity += double.Epsilon;
             }
 
             if (results.Count < count)
