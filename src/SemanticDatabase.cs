@@ -20,6 +20,8 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(item);
 
+        item = item.Replace(PropertySeparator, ' ').Replace(TagSeparator, ' ');
+
         var embedding = await GetEmbeddingAsync(item, cancellationToken);
         var magnitude = Math.Sqrt(TensorPrimitives.SumOfSquares(embedding));
         var builder = new StringBuilder();
