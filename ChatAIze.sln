@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatAIze.SemanticIndex", "src\ChatAIze.SemanticIndex.csproj", "{95354602-D1AA-4A3A-AA6E-4507C488E3FB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatAIze.SemanticIndex.Preview", "preview\ChatAIze.SemanticIndex.Preview.csproj", "{79FA7BAC-F3D5-4F5F-945B-6F4493B4A782}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{95354602-D1AA-4A3A-AA6E-4507C488E3FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95354602-D1AA-4A3A-AA6E-4507C488E3FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95354602-D1AA-4A3A-AA6E-4507C488E3FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79FA7BAC-F3D5-4F5F-945B-6F4493B4A782}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79FA7BAC-F3D5-4F5F-945B-6F4493B4A782}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79FA7BAC-F3D5-4F5F-945B-6F4493B4A782}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79FA7BAC-F3D5-4F5F-945B-6F4493B4A782}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
