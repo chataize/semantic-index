@@ -99,7 +99,7 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
 
             foreach (var tag in tags.Split(TagSeparator))
             {
-                if (tags[tag] == requiredTag)
+                if (tags[tag].SequenceEqual(requiredTag))
                 {
                     found = true;
                     break;
