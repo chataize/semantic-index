@@ -117,12 +117,24 @@ public sealed class SemanticDatabase(string path, string apiKey, string model = 
 
     private static string Escape(string value)
     {
-        return value.Replace(PropertySeparator, ' ').Replace(TagSeparator, ' ').Replace("\r", "\\r").Replace("\n", "\\n");
+        var builder = new StringBuilder(value);
+
+        builder.Replace(PropertySeparator, ' ');
+        builder.Replace(TagSeparator, ' ');
+        builder.Replace("\r", "\\r");
+        builder.Replace("\n", "\\n");
+
+        return builder.ToString();
     }
 
     private static string Unescape(string value)
     {
-        return value.Replace("\\r", "\r").Replace("\\n", "\n");
+        var builder = new StringBuilder(value);
+
+        builder.Replace("\\r", "\r");
+        builder.Replace("\\n", "\n");
+
+        return builder.ToString();
     }
 
     private async Task<float[]> GetEmbeddingAsync(string item, CancellationToken cancellationToken = default)
