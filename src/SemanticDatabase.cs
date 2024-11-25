@@ -1,19 +1,16 @@
 ﻿using System.Numerics.Tensors;
 using System.Text;
 using ChatAIze.GenerativeCS.Clients;
+using ChatAIze.GenerativeCS.Constants;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 
 namespace ChatAIze.SemanticIndex;
 
-public sealed class SemanticDatabase
+public sealed class SemanticDatabase(string path, string apiKey, string model = EmbeddingModels.OpenAI.TextEmbedding3Small, int vectorSize = 1536)
 {
-    private const int VectorSize = 1536;
-
     private readonly OpenAIClient _client = new();
 
-    public required string Path { get; set; }
-
-    public required string ApiKey { get; set; }
+    private readonly EmbeddingOptions _options = new(model: model, apiKey: apiKey);
 
     public async Task AddAsync(string item, ICollection<string>? tags = null, CancellationToken cancellationToken = default)
     {
@@ -31,7 +28,7 @@ public sealed class SemanticDatabase
         builder.Append(';');
         builder.Append(item);
 
-        using var writer = new StreamWriter(Path, append: true);
+        using var writer = new StreamWriter(path, append: true);
         await writer.WriteLineAsync(builder.ToString());
     }
 
@@ -41,7 +38,7 @@ public sealed class SemanticDatabase
         var queryMagnitude = Math.Sqrt(TensorPrimitives.SumOfSquares(queryEmbedding));
         var results = new SortedList<double, string>();
 
-        using var reader = new StreamReader(Path);
+        using var reader = new StreamReader(path);
 
         while (!reader.EndOfStream)
         {
@@ -90,10 +87,16 @@ public sealed class SemanticDatabase
         throw new NotImplementedException();
     }
 
-    private static float[] ParseFloatArray(ReadOnlySpan<char> embedding)
+    private async Task<float[]> GetEmbeddingAsync(string item, CancellationToken cancellationToken = default)
+    {
+        var embedding = await _client.GetEmbeddingAsync(item, _options, cancellationToken: cancellationToken);
+        return embedding;
+    }
+
+    private float[] ParseFloatArray(ReadOnlySpan<char> embedding)
     {
         var parts = embedding.Split(',');
-        var result = new float[VectorSize];
+        var result = new float[vectorSize];
         var index = 0;
 
         foreach (var part in parts)
@@ -102,13 +105,5 @@ public sealed class SemanticDatabase
         }
 
         return result;
-    }
-
-    private async Task<float[]> GetEmbeddingAsync(string item, CancellationToken cancellationToken = default)
-    {
-        var options = new EmbeddingOptions(model: "text-embedding-3-small", apiKey: ApiKey);
-        var embedding = await _client.GetEmbeddingAsync(item, options, cancellationToken: cancellationToken);
-
-        return embedding;
     }
 }
