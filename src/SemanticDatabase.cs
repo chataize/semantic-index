@@ -7,6 +7,8 @@ namespace ChatAIze.SemanticIndex;
 
 public sealed class SemanticDatabase
 {
+    private const int VectorSize = 1536;
+
     private readonly OpenAIClient _client = new();
 
     public required string Path { get; set; }
@@ -55,9 +57,8 @@ public sealed class SemanticDatabase
                 continue;
             }
 
-            var itemEmbedding = parts[1].Split(',').Select(float.Parse).ToArray();
+            var itemEmbedding = ParseFloatArray(parts[1]);
             var itemMagnitude = float.Parse(parts[2]);
-
             var similarity = TensorPrimitives.Dot(queryEmbedding, itemEmbedding) / (queryMagnitude * itemMagnitude);
 
             while (results.ContainsKey(similarity))
@@ -89,9 +90,23 @@ public sealed class SemanticDatabase
         throw new NotImplementedException();
     }
 
+    private static float[] ParseFloatArray(ReadOnlySpan<char> embedding)
+    {
+        var parts = embedding.Split(',');
+        var result = new float[VectorSize];
+        var index = 0;
+
+        foreach (var part in parts)
+        {
+            result[index++] = float.Parse(embedding[part]);
+        }
+
+        return result;
+    }
+
     private async Task<float[]> GetEmbeddingAsync(string item, CancellationToken cancellationToken = default)
     {
-        var options = new EmbeddingOptions(apiKey: ApiKey);
+        var options = new EmbeddingOptions(model: "text-embedding-3-small", apiKey: ApiKey);
         var embedding = await _client.GetEmbeddingAsync(item, options, cancellationToken: cancellationToken);
 
         return embedding;
