@@ -1,4 +1,5 @@
 ﻿using System.Numerics.Tensors;
+using System.Text;
 using ChatAIze.GenerativeCS.Clients;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 
@@ -14,27 +15,27 @@ public sealed class SemanticDatabase
 
     public async Task AddAsync(string item, ICollection<string>? tags = null, CancellationToken cancellationToken = default)
     {
-        if (item is not null)
-        {
-            tags ??= [];
+        ArgumentException.ThrowIfNullOrWhiteSpace(item);
 
-            using var writer = new StreamWriter(Path, append: true);
-            var embedding = await GetEmbeddingAsync(item, cancellationToken);
+        var embedding = await GetEmbeddingAsync(item, cancellationToken);
+        var builder = new StringBuilder();
 
-            await writer.WriteLineAsync($"{string.Join(',', tags)};{string.Join(',', embedding)};{item}");
-        }
-        else
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        builder.AppendJoin(',', tags ?? Enumerable.Empty<string>());
+        builder.Append(';');
+        builder.AppendJoin(',', embedding);
+        builder.Append(';');
+        builder.Append(item);
+
+        using var writer = new StreamWriter(Path, append: true);
+        await writer.WriteLineAsync(builder.ToString());
     }
 
     public async Task<IList<string>> FindAsync(string query, ICollection<string>? tags = null, int count = 10, CancellationToken cancellationToken = default)
     {
-        using var reader = new StreamReader(Path);
-
         var queryEmbedding = await GetEmbeddingAsync(query, cancellationToken);
         var results = new SortedList<float, string>();
+
+        using var reader = new StreamReader(Path);
 
         while (!reader.EndOfStream)
         {
