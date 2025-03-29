@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Title>Semantic Index</Title>
+    <Product>Semantic Index</Product>
+    <Version>0.1.0</Version>
+    <Company>ChatAIze</Company>
+    <Authors>Marcel Kwiatkowski</Authors>
+    <Copyright>© ChatAIze 2025</Copyright>
+    <AssemblyName>ChatAIze.SemanticIndex</AssemblyName>
+    <RootNamespace>ChatAIze.SemanticIndex</RootNamespace>
+    <PackageId>ChatAIze.SemanticIndex</PackageId>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://www.chataize.com</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/chataize/semantic-index/releases</PackageReleaseNotes>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/chataize/semantic-index</RepositoryUrl>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Description>
+      Lightweight, single-file vector database for experiments and small projects.
+    </Description>
+    <PackageTags>
+      ai, chataize, core, cosine, csharp, data, database, db, dotnet, embedding, embeddings, engine,
+      library, search, similarity, storage, vector, vectors
+    </PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="icon.png" Pack="true" PackagePath="\" />
+    <None Include="../README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+</Project>
