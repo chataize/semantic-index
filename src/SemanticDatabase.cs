@@ -6,7 +6,7 @@ namespace ChatAIze.SemanticIndex;
 
 public sealed class SemanticDatabase<T>
 {
-    private readonly Lock _lock = new();
+    private readonly ReaderWriterLockSlim _lock = new();
 
     private readonly OpenAIClient _client = new();
 
@@ -30,17 +30,24 @@ public sealed class SemanticDatabase<T>
         var embedding = await _client.GetEmbeddingAsync(json, cancellationToken: cancellationToken);
         var record = new SemanticRecord<T>(item, embedding);
 
-        lock (_lock)
+        _lock.EnterWriteLock();
+
+        try
         {
             _records.Add(record);
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
 
     public IEnumerable<T> Search(float[] embedding, int count = 10)
     {
         var results = new SortedList<float, T>();
+        _lock.EnterReadLock();
 
-        lock (_lock)
+        try
         {
             foreach (var record in _records)
             {
@@ -67,6 +74,10 @@ public sealed class SemanticDatabase<T>
                 }
             }
         }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
 
         return results.Values.Reverse();
     }
@@ -85,9 +96,15 @@ public sealed class SemanticDatabase<T>
 
     public void Remove(T item)
     {
-        lock (_lock)
+        _lock.EnterWriteLock();
+
+        try
         {
             _records.RemoveAll(r => r.Item!.Equals(item));
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
 
@@ -96,18 +113,30 @@ public sealed class SemanticDatabase<T>
         using var stream = File.OpenRead(filePath);
         var records = await JsonSerializer.DeserializeAsync<List<SemanticRecord<T>>>(stream, cancellationToken: cancellationToken) ?? [];
 
-        lock (_lock)
+        _lock.EnterWriteLock();
+
+        try
         {
             _records = records;
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
 
     public async Task SaveAsync(string filePath, CancellationToken cancellationToken = default)
     {
         List<SemanticRecord<T>> records;
-        lock (_lock)
+        _lock.EnterReadLock();
+
+        try
         {
             records = [.. _records];
+        }
+        finally
+        {
+            _lock.ExitReadLock();
         }
 
         using var stream = File.Create(filePath);
