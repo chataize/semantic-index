@@ -22,10 +22,10 @@ public sealed class SemanticDatabase<T>
         _client = client;
     }
 
-    public async Task AddAsync(T item)
+    public async Task AddAsync(T item, CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(item);
-        var embedding = await _client.GetEmbeddingAsync(json);
+        var embedding = await _client.GetEmbeddingAsync(json, cancellationToken: cancellationToken);
         var record = new SemanticRecord<T>(item, embedding);
 
         _records.Add(record);
@@ -63,16 +63,16 @@ public sealed class SemanticDatabase<T>
         return results.Values.Reverse();
     }
 
-    public async Task<IEnumerable<T>> SearchAsync(string query, int count = 10)
+    public async Task<IEnumerable<T>> SearchAsync(string query, int count = 10, CancellationToken cancellationToken = default)
     {
-        var embedding = await _client.GetEmbeddingAsync(query);
+        var embedding = await _client.GetEmbeddingAsync(query, cancellationToken: cancellationToken);
         return Search(embedding, count);
     }
 
-    public async Task<IEnumerable<T>> SearchAsync(object query, int count = 10)
+    public async Task<IEnumerable<T>> SearchAsync(object query, int count = 10, CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(query);
-        return await SearchAsync(json, count);
+        return await SearchAsync(json, count, cancellationToken);
     }
 
     public void Remove(T item)
@@ -80,15 +80,15 @@ public sealed class SemanticDatabase<T>
         _records.RemoveAll(r => r.Item!.Equals(item));
     }
 
-    public async Task LoadAsync(string filePath)
+    public async Task LoadAsync(string filePath, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filePath);
-        _records = await JsonSerializer.DeserializeAsync<List<SemanticRecord<T>>>(stream) ?? [];
+        _records = await JsonSerializer.DeserializeAsync<List<SemanticRecord<T>>>(stream, cancellationToken: cancellationToken) ?? [];
     }
 
-    public async Task SaveAsync(string filePath)
+    public async Task SaveAsync(string filePath, CancellationToken cancellationToken = default)
     {
         using var stream = File.Create(filePath);
-        await JsonSerializer.SerializeAsync(stream, _records);
+        await JsonSerializer.SerializeAsync(stream, _records, cancellationToken: cancellationToken);
     }
 }
