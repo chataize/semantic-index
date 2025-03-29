@@ -10,6 +10,18 @@ public sealed class SemanticDatabase<T>
 
     private List<SemanticRecord<T>> _records = [];
 
+    public SemanticDatabase() { }
+
+    public SemanticDatabase(string apiKey)
+    {
+        _client = new OpenAIClient(apiKey);
+    }
+
+    public SemanticDatabase(OpenAIClient client)
+    {
+        _client = client;
+    }
+
     public async Task AddAsync(T item)
     {
         var json = JsonSerializer.Serialize(item);
