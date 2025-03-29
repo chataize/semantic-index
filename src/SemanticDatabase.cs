@@ -19,7 +19,7 @@ public sealed class SemanticDatabase<T>
         _records.Add(record);
     }
 
-    public async Task<List<T>> SearchAsync(float[] embedding, int count = 10)
+    public IEnumerable<T> Search(float[] embedding, int count = 10)
     {
         var results = new SortedList<float, T>();
 
@@ -48,16 +48,16 @@ public sealed class SemanticDatabase<T>
             }
         }
 
-        return [.. results.Values.Reverse()];
+        return results.Values.Reverse();
     }
 
-    public async Task<List<T>> SearchAsync(string query, int count = 10)
+    public async Task<IEnumerable<T>> SearchAsync(string query, int count = 10)
     {
         var embedding = await _client.GetEmbeddingAsync(query);
         return await SearchAsync(embedding, count);
     }
 
-    public async Task<List<T>> SearchAsync(object query, int count = 10)
+    public async Task<IEnumerable<T>> SearchAsync(object query, int count = 10)
     {
         var json = JsonSerializer.Serialize(query);
         return await SearchAsync(json, count);
