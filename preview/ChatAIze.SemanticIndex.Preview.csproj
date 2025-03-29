@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Title>Semantic Index Preview</Title>
+    <Product>Semantic Index</Product>
+    <Version>0.1.0</Version>
+    <Company>ChatAIze</Company>
+    <Authors>Marcel Kwiatkowski</Authors>
+    <Copyright>© ChatAIze 2025</Copyright>
+    <AssemblyName>ChatAIze.SemanticIndex.Preview</AssemblyName>
+    <RootNamespace>ChatAIze.SemanticIndex.Preview</RootNamespace>
+    <PackageId>ChatAIze.SemanticIndex.Preview</PackageId>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://www.chataize.com</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/chataize/semantic-index/releases</PackageReleaseNotes>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/chataize/semantic-index</RepositoryUrl>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <Description>
+      Simple console app to test the Semantic Index library.
+    </Description>
+    <PackageTags>
+      ai, app, chataize, console, core, cosine, csharp, data, database, db, dotnet, embedding,
+      embeddings, engine, library, preview, search, similarity, storage, vector, vectors
+    </PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="icon.png" Pack="true" PackagePath="\" />
+    <None Include="../README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\ChatAIze.SemanticIndex.csproj" />
+  </ItemGroup>
+</Project>
