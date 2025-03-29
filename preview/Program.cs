@@ -4,14 +4,17 @@ var database = new SemanticDatabase<string>();
 
 if (!File.Exists("test-database.json"))
 {
-    await database.AddAsync("cat");
-    await database.AddAsync("dog");
-    await database.AddAsync("fish");
+    var tasks = new List<Task>
+    {
+        database.AddAsync("cat"),
+        database.AddAsync("dog"),
+        database.AddAsync("fish"),
+        database.AddAsync("apple"),
+        database.AddAsync("banana"),
+        database.AddAsync("orange")
+    };
 
-    await database.AddAsync("apple");
-    await database.AddAsync("banana");
-    await database.AddAsync("orange");
-
+    await Task.WhenAll(tasks);
     await database.SaveAsync("test-database.json");
 }
 else
