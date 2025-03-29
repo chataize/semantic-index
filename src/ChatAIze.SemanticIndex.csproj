@@ -33,5 +33,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ChatAIze.GenerativeCS" Version="0.13.5" />
+    <PackageReference Include="System.Numerics.Tensors" Version="9.0.3" />
   </ItemGroup>
 </Project>
