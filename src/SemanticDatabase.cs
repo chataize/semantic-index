@@ -6,6 +6,8 @@ namespace ChatAIze.SemanticIndex;
 
 public sealed class SemanticDatabase<T>
 {
+    private readonly Lock _lock = new();
+
     private readonly OpenAIClient _client = new();
 
     private List<SemanticRecord<T>> _records = [];
@@ -28,35 +30,41 @@ public sealed class SemanticDatabase<T>
         var embedding = await _client.GetEmbeddingAsync(json, cancellationToken: cancellationToken);
         var record = new SemanticRecord<T>(item, embedding);
 
-        _records.Add(record);
+        lock (_lock)
+        {
+            _records.Add(record);
+        }
     }
 
     public IEnumerable<T> Search(float[] embedding, int count = 10)
     {
         var results = new SortedList<float, T>();
 
-        foreach (var record in _records)
+        lock (_lock)
         {
-            var similarity = TensorPrimitives.Dot(record.Embedding, embedding);
-
-            if (results.Count < count)
+            foreach (var record in _records)
             {
-                while (results.ContainsKey(similarity))
-                {
-                    similarity += 1e-6f;
-                }
+                var similarity = TensorPrimitives.Dot(record.Embedding, embedding);
 
-                results.Add(similarity, record.Item);
-            }
-            else if (similarity > results.Keys[0])
-            {
-                while (results.ContainsKey(similarity))
+                if (results.Count < count)
                 {
-                    similarity += 1e-6f;
-                }
+                    while (results.ContainsKey(similarity))
+                    {
+                        similarity += 1e-6f;
+                    }
 
-                results.RemoveAt(0);
-                results.Add(similarity, record.Item);
+                    results.Add(similarity, record.Item);
+                }
+                else if (similarity > results.Keys[0])
+                {
+                    while (results.ContainsKey(similarity))
+                    {
+                        similarity += 1e-6f;
+                    }
+
+                    results.RemoveAt(0);
+                    results.Add(similarity, record.Item);
+                }
             }
         }
 
@@ -77,18 +85,32 @@ public sealed class SemanticDatabase<T>
 
     public void Remove(T item)
     {
-        _records.RemoveAll(r => r.Item!.Equals(item));
+        lock (_lock)
+        {
+            _records.RemoveAll(r => r.Item!.Equals(item));
+        }
     }
 
     public async Task LoadAsync(string filePath, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filePath);
-        _records = await JsonSerializer.DeserializeAsync<List<SemanticRecord<T>>>(stream, cancellationToken: cancellationToken) ?? [];
+        var records = await JsonSerializer.DeserializeAsync<List<SemanticRecord<T>>>(stream, cancellationToken: cancellationToken) ?? [];
+
+        lock (_lock)
+        {
+            _records = records;
+        }
     }
 
     public async Task SaveAsync(string filePath, CancellationToken cancellationToken = default)
     {
+        List<SemanticRecord<T>> records;
+        lock (_lock)
+        {
+            records = [.. _records];
+        }
+
         using var stream = File.Create(filePath);
-        await JsonSerializer.SerializeAsync(stream, _records, cancellationToken: cancellationToken);
+        await JsonSerializer.SerializeAsync(stream, records, cancellationToken: cancellationToken);
     }
 }
