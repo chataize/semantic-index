@@ -54,7 +54,7 @@ public sealed class SemanticDatabase<T>
     public async Task<IEnumerable<T>> SearchAsync(string query, int count = 10)
     {
         var embedding = await _client.GetEmbeddingAsync(query);
-        return await SearchAsync(embedding, count);
+        return Search(embedding, count);
     }
 
     public async Task<IEnumerable<T>> SearchAsync(object query, int count = 10)
