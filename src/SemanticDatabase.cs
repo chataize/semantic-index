@@ -1,5 +1,4 @@
 ﻿using System.Numerics.Tensors;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using ChatAIze.GenerativeCS.Clients;
 
