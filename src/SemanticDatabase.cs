@@ -1,4 +1,5 @@
 ﻿using System.Numerics.Tensors;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using ChatAIze.GenerativeCS.Clients;
 
@@ -97,6 +98,14 @@ public class SemanticDatabase<T>
     public async Task AddRangeAsync(IEnumerable<T> items, CancellationToken cancellationToken = default)
     {
         foreach (var item in items)
+        {
+            await AddAsync(item, cancellationToken);
+        }
+    }
+
+    public async Task AddRangeAsync(IAsyncEnumerable<T> items, CancellationToken cancellationToken = default)
+    {
+        await foreach (var item in items.WithCancellation(cancellationToken))
         {
             await AddAsync(item, cancellationToken);
         }
