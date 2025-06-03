@@ -144,6 +144,20 @@ public class SemanticDatabase<T>
         }
     }
 
+    public virtual void Clear()
+    {
+        _lock.EnterWriteLock();
+
+        try
+        {
+            _records.Clear();
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
+        }
+    }
+
     public virtual async Task LoadAsync(string filePath, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filePath);
