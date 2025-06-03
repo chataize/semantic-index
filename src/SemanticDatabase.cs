@@ -26,6 +26,23 @@ public class SemanticDatabase<T>
 
     public DuplicateHandling DuplicateHandling { get; set; } = DuplicateHandling.Update;
 
+    public IReadOnlyList<SemanticRecord<T>> Records
+    {
+        get
+        {
+            _lock.EnterReadLock();
+
+            try
+            {
+                return _records.AsReadOnly();
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
+    }
+
     public virtual async Task AddAsync(T item, CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(item);
