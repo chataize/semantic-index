@@ -24,6 +24,12 @@ public class SemanticDatabase<T>
         _client = client;
     }
 
+    public string? ApiKey
+    {
+        get => _client.ApiKey;
+        set => _client.ApiKey = value;
+    }
+
     public DuplicateHandling DuplicateHandling { get; set; } = DuplicateHandling.Update;
 
     public IReadOnlyList<SemanticRecord<T>> Records
