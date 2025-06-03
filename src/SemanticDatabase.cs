@@ -94,6 +94,14 @@ public class SemanticDatabase<T>
         }
     }
 
+    public async Task AddRangeAsync(IEnumerable<T> items, CancellationToken cancellationToken = default)
+    {
+        foreach (var item in items)
+        {
+            await AddAsync(item, cancellationToken);
+        }
+    }
+
     public bool Contains(T item)
     {
         _lock.EnterReadLock();
