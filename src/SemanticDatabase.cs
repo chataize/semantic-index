@@ -1,6 +1,8 @@
 ﻿using System.Numerics.Tensors;
 using System.Text.Json;
 using ChatAIze.GenerativeCS.Clients;
+using ChatAIze.GenerativeCS.Constants;
+using ChatAIze.GenerativeCS.Options.OpenAI;
 
 namespace ChatAIze.SemanticIndex;
 
@@ -9,6 +11,11 @@ public class SemanticDatabase<T>
     protected readonly ReaderWriterLockSlim _lock = new();
 
     protected readonly OpenAIClient _client = new();
+
+    protected readonly EmbeddingOptions _embeddingOptions = new()
+    {
+        Model = EmbeddingModels.OpenAI.TextEmbedding3Large
+    };
 
     protected List<SemanticRecord<T>> _records = [];
 
@@ -28,6 +35,12 @@ public class SemanticDatabase<T>
     {
         get => _client.ApiKey;
         set => _client.ApiKey = value;
+    }
+
+    public string EmbeddingModel
+    {
+        get => _embeddingOptions.Model;
+        set => _embeddingOptions.Model = value;
     }
 
     public DuplicateHandling DuplicateHandling { get; set; } = DuplicateHandling.Update;
@@ -89,7 +102,7 @@ public class SemanticDatabase<T>
         ArgumentNullException.ThrowIfNull(item, nameof(item));
 
         var json = JsonSerializer.Serialize(item);
-        var embedding = await _client.GetEmbeddingAsync(json, cancellationToken: cancellationToken);
+        var embedding = await _client.GetEmbeddingAsync(json, _embeddingOptions, cancellationToken: cancellationToken);
         var record = new SemanticRecord<T>(item, embedding);
 
         _lock.EnterWriteLock();
@@ -271,7 +284,7 @@ public class SemanticDatabase<T>
         foreach (var record in records)
         {
             var json = JsonSerializer.Serialize(record.Item);
-            record.Embedding = await _client.GetEmbeddingAsync(json, cancellationToken: cancellationToken);
+            record.Embedding = await _client.GetEmbeddingAsync(json, _embeddingOptions, cancellationToken: cancellationToken);
         }
 
         _lock.EnterWriteLock();
