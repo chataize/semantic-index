@@ -6,45 +6,87 @@ using ChatAIze.GenerativeCS.Options.OpenAI;
 
 namespace ChatAIze.SemanticIndex;
 
+/// <summary>
+/// Provides a simple in-memory vector database built on top of
+/// <see cref="OpenAIClient"/> embeddings.
+/// </summary>
+/// <typeparam name="T">The type of items stored in the database.</typeparam>
 public class SemanticDatabase<T>
 {
+    /// <summary>
+    /// Lock used to synchronize access to the record list.
+    /// </summary>
     protected readonly ReaderWriterLockSlim _lock = new();
 
+    /// <summary>
+    /// Client used to retrieve embeddings for stored items.
+    /// </summary>
     protected readonly OpenAIClient _client = new();
 
+    /// <summary>
+    /// Options used when requesting embeddings.
+    /// </summary>
     protected readonly EmbeddingOptions _embeddingOptions = new()
     {
         Model = EmbeddingModels.OpenAI.TextEmbedding3Large
     };
 
+    /// <summary>
+    /// Internal list of semantic records.
+    /// </summary>
     protected List<SemanticRecord<T>> _records = [];
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SemanticDatabase{T}"/> class.
+    /// </summary>
     public SemanticDatabase() { }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SemanticDatabase{T}"/> class
+    /// using the specified OpenAI API key.
+    /// </summary>
+    /// <param name="apiKey">The OpenAI API key for the <see cref="OpenAIClient"/>.</param>
     public SemanticDatabase(string apiKey)
     {
         _client = new OpenAIClient(apiKey);
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SemanticDatabase{T}"/> class
+    /// using the provided <see cref="OpenAIClient"/> instance.
+    /// </summary>
+    /// <param name="client">The client used for generating embeddings.</param>
     public SemanticDatabase(OpenAIClient client)
     {
         _client = client;
     }
 
+    /// <summary>
+    /// Gets or sets the OpenAI API key used by the underlying client.
+    /// </summary>
     public string? ApiKey
     {
         get => _client.ApiKey;
         set => _client.ApiKey = value;
     }
 
+    /// <summary>
+    /// Gets or sets the embedding model to use when generating embeddings.
+    /// </summary>
     public string EmbeddingModel
     {
         get => _embeddingOptions.Model;
         set => _embeddingOptions.Model = value;
     }
 
+    /// <summary>
+    /// Gets or sets the duplicate handling strategy.
+    /// </summary>
     public DuplicateHandling DuplicateHandling { get; set; } = DuplicateHandling.Update;
 
+    /// <summary>
+    /// Gets a read-only view of all records stored in the database.
+    /// </summary>
     public IReadOnlyList<SemanticRecord<T>> Records
     {
         get
@@ -62,6 +104,9 @@ public class SemanticDatabase<T>
         }
     }
 
+    /// <summary>
+    /// Gets the number of records in the database.
+    /// </summary>
     public int Count
     {
         get
@@ -79,6 +124,13 @@ public class SemanticDatabase<T>
         }
     }
 
+    /// <summary>
+    /// Loads a semantic database from a file.
+    /// </summary>
+    /// <param name="filePath">The path to the JSON file.</param>
+    /// <param name="apiKey">Optional OpenAI API key used when creating the database.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A new <see cref="SemanticDatabase{T}"/> populated from the file.</returns>
     public static async Task<SemanticDatabase<T>> FromFileAsync(string filePath, string? apiKey = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath, nameof(filePath));
@@ -97,6 +149,11 @@ public class SemanticDatabase<T>
         return database;
     }
 
+    /// <summary>
+    /// Adds a single item to the database.
+    /// </summary>
+    /// <param name="item">The item to add.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
     public virtual async Task AddAsync(T item, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(item, nameof(item));
@@ -133,6 +190,11 @@ public class SemanticDatabase<T>
         }
     }
 
+    /// <summary>
+    /// Adds a collection of items to the database.
+    /// </summary>
+    /// <param name="items">The items to add.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
     public async Task AddRangeAsync(IEnumerable<T> items, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(items, nameof(items));
@@ -143,6 +205,11 @@ public class SemanticDatabase<T>
         }
     }
 
+    /// <summary>
+    /// Adds items from an asynchronous stream to the database.
+    /// </summary>
+    /// <param name="items">The asynchronous stream of items.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
     public async Task AddRangeAsync(IAsyncEnumerable<T> items, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(items, nameof(items));
@@ -153,6 +220,11 @@ public class SemanticDatabase<T>
         }
     }
 
+    /// <summary>
+    /// Determines whether the specified item exists in the database.
+    /// </summary>
+    /// <param name="item">The item to check for.</param>
+    /// <returns><see langword="true"/> if the item is present; otherwise <see langword="false"/>.</returns>
     public bool Contains(T item)
     {
         ArgumentNullException.ThrowIfNull(item, nameof(item));
@@ -169,6 +241,10 @@ public class SemanticDatabase<T>
         }
     }
 
+    /// <summary>
+    /// Gets a list of all items stored in the database.
+    /// </summary>
+    /// <returns>A list containing all stored items.</returns>
     public List<T> GetAll()
     {
         _lock.EnterReadLock();
@@ -183,6 +259,12 @@ public class SemanticDatabase<T>
         }
     }
 
+    /// <summary>
+    /// Searches the database for items similar to the given embedding.
+    /// </summary>
+    /// <param name="embedding">The embedding to search for.</param>
+    /// <param name="count">The maximum number of results to return.</param>
+    /// <returns>An enumerable of the most similar items.</returns>
     public virtual IEnumerable<T> Search(float[] embedding, int count = 10)
     {
         ArgumentNullException.ThrowIfNull(embedding, nameof(embedding));
@@ -225,6 +307,11 @@ public class SemanticDatabase<T>
         return results.Values.Reverse();
     }
 
+    /// <summary>
+    /// Returns the single most similar item to the specified embedding.
+    /// </summary>
+    /// <param name="embedding">The embedding to search for.</param>
+    /// <returns>The most similar item or <see langword="null"/> if none exist.</returns>
     public T? SearchFirst(float[] embedding)
     {
         ArgumentNullException.ThrowIfNull(embedding, nameof(embedding));
@@ -233,6 +320,13 @@ public class SemanticDatabase<T>
         return results.FirstOrDefault();
     }
 
+    /// <summary>
+    /// Searches the database asynchronously using a text query.
+    /// </summary>
+    /// <param name="query">The text to search for.</param>
+    /// <param name="count">The maximum number of results to return.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>An enumerable of matching items.</returns>
     public virtual async Task<IEnumerable<T>> SearchAsync(string query, int count = 10, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query, nameof(query));
@@ -241,6 +335,12 @@ public class SemanticDatabase<T>
         return Search(embedding, count);
     }
 
+    /// <summary>
+    /// Returns the single most similar item to the specified text query.
+    /// </summary>
+    /// <param name="query">The text to search for.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>The most similar item or <see langword="null"/> if none exist.</returns>
     public virtual async Task<T?> SearchFirstAsync(string query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query, nameof(query));
@@ -249,6 +349,13 @@ public class SemanticDatabase<T>
         return results.FirstOrDefault();
     }
 
+    /// <summary>
+    /// Searches the database asynchronously using an arbitrary object as the query.
+    /// </summary>
+    /// <param name="query">The object to search for.</param>
+    /// <param name="count">The maximum number of results to return.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>An enumerable of matching items.</returns>
     public virtual async Task<IEnumerable<T>> SearchAsync(object query, int count = 10, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query, nameof(query));
@@ -257,6 +364,12 @@ public class SemanticDatabase<T>
         return await SearchAsync(json, count, cancellationToken);
     }
 
+    /// <summary>
+    /// Returns the single most similar item to the specified object query.
+    /// </summary>
+    /// <param name="query">The object to search for.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>The most similar item or <see langword="null"/> if none exist.</returns>
     public virtual async Task<T?> SearchFirstAsync(object query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query, nameof(query));
@@ -265,6 +378,10 @@ public class SemanticDatabase<T>
         return results.FirstOrDefault();
     }
 
+    /// <summary>
+    /// Regenerates embeddings for all records in the database.
+    /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
     public async Task RefreshEmbeddingsAsync(CancellationToken cancellationToken = default)
     {
         // Take a snapshot of the items so we don't hold the lock during the network calls
@@ -299,6 +416,10 @@ public class SemanticDatabase<T>
         }
     }
 
+    /// <summary>
+    /// Removes the specified item from the database.
+    /// </summary>
+    /// <param name="item">The item to remove.</param>
     public virtual void Remove(T item)
     {
         ArgumentNullException.ThrowIfNull(item, nameof(item));
@@ -315,6 +436,10 @@ public class SemanticDatabase<T>
         }
     }
 
+    /// <summary>
+    /// Removes a collection of items from the database.
+    /// </summary>
+    /// <param name="items">The items to remove.</param>
     public void RemoveRange(IEnumerable<T> items)
     {
         ArgumentNullException.ThrowIfNull(items, nameof(items));
@@ -334,6 +459,9 @@ public class SemanticDatabase<T>
         }
     }
 
+    /// <summary>
+    /// Removes all records from the database.
+    /// </summary>
     public virtual void Clear()
     {
         _lock.EnterWriteLock();
@@ -348,6 +476,11 @@ public class SemanticDatabase<T>
         }
     }
 
+    /// <summary>
+    /// Loads database records from a JSON file.
+    /// </summary>
+    /// <param name="filePath">The path to the file.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
     public virtual async Task LoadAsync(string filePath, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath, nameof(filePath));
@@ -367,6 +500,11 @@ public class SemanticDatabase<T>
         }
     }
 
+    /// <summary>
+    /// Saves the database to a JSON file.
+    /// </summary>
+    /// <param name="filePath">The file path to save to.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
     public virtual async Task SaveAsync(string filePath, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath, nameof(filePath));
