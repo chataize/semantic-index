@@ -48,7 +48,7 @@ public class SemanticDatabase<T>
         get
         {
             _lock.EnterReadLock();
-            
+
             try
             {
                 return _records.Count;
@@ -91,6 +91,20 @@ public class SemanticDatabase<T>
         finally
         {
             _lock.ExitWriteLock();
+        }
+    }
+
+    public bool Contains(T item)
+    {
+        _lock.EnterReadLock();
+
+        try
+        {
+            return _records.Any(r => r.Item!.Equals(item));
+        }
+        finally
+        {
+            _lock.ExitReadLock();
         }
     }
 
