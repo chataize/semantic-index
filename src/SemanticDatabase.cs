@@ -63,6 +63,8 @@ public class SemanticDatabase<T>
 
     public virtual async Task AddAsync(T item, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(item, nameof(item));
+
         var json = JsonSerializer.Serialize(item);
         var embedding = await _client.GetEmbeddingAsync(json, cancellationToken: cancellationToken);
         var record = new SemanticRecord<T>(item, embedding);
@@ -97,6 +99,8 @@ public class SemanticDatabase<T>
 
     public async Task AddRangeAsync(IEnumerable<T> items, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(items, nameof(items));
+
         foreach (var item in items)
         {
             await AddAsync(item, cancellationToken);
@@ -105,6 +109,8 @@ public class SemanticDatabase<T>
 
     public async Task AddRangeAsync(IAsyncEnumerable<T> items, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(items, nameof(items));
+
         await foreach (var item in items.WithCancellation(cancellationToken))
         {
             await AddAsync(item, cancellationToken);
@@ -113,6 +119,8 @@ public class SemanticDatabase<T>
 
     public bool Contains(T item)
     {
+        ArgumentNullException.ThrowIfNull(item, nameof(item));
+
         _lock.EnterReadLock();
 
         try
@@ -141,6 +149,8 @@ public class SemanticDatabase<T>
 
     public virtual IEnumerable<T> Search(float[] embedding, int count = 10)
     {
+        ArgumentNullException.ThrowIfNull(embedding, nameof(embedding));
+
         var results = new SortedList<float, T>();
         _lock.EnterReadLock();
 
@@ -181,30 +191,40 @@ public class SemanticDatabase<T>
 
     public T? SearchFirst(float[] embedding)
     {
+        ArgumentNullException.ThrowIfNull(embedding, nameof(embedding));
+
         var results = Search(embedding, 1);
         return results.FirstOrDefault();
     }
 
     public virtual async Task<IEnumerable<T>> SearchAsync(string query, int count = 10, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(query, nameof(query));
+
         var embedding = await _client.GetEmbeddingAsync(query, cancellationToken: cancellationToken);
         return Search(embedding, count);
     }
 
     public virtual async Task<T?> SearchFirstAsync(string query, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(query, nameof(query));
+
         var results = await SearchAsync(query, 1, cancellationToken);
         return results.FirstOrDefault();
     }
 
     public virtual async Task<IEnumerable<T>> SearchAsync(object query, int count = 10, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(query, nameof(query));
+
         var json = JsonSerializer.Serialize(query);
         return await SearchAsync(json, count, cancellationToken);
     }
 
     public virtual async Task<T?> SearchFirstAsync(object query, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(query, nameof(query));
+
         var results = await SearchAsync(query, 1, cancellationToken);
         return results.FirstOrDefault();
     }
@@ -229,6 +249,8 @@ public class SemanticDatabase<T>
 
     public virtual void Remove(T item)
     {
+        ArgumentNullException.ThrowIfNull(item, nameof(item));
+
         _lock.EnterWriteLock();
 
         try
@@ -243,6 +265,8 @@ public class SemanticDatabase<T>
 
     public void RemoveRange(IEnumerable<T> items)
     {
+        ArgumentNullException.ThrowIfNull(items, nameof(items));
+
         _lock.EnterWriteLock();
 
         try
@@ -274,6 +298,8 @@ public class SemanticDatabase<T>
 
     public virtual async Task LoadAsync(string filePath, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(filePath, nameof(filePath));
+
         using var stream = File.OpenRead(filePath);
         var records = await JsonSerializer.DeserializeAsync<List<SemanticRecord<T>>>(stream, cancellationToken: cancellationToken) ?? [];
 
@@ -291,6 +317,8 @@ public class SemanticDatabase<T>
 
     public virtual async Task SaveAsync(string filePath, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(filePath, nameof(filePath));
+
         List<SemanticRecord<T>> records;
         _lock.EnterReadLock();
 
