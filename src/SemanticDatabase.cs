@@ -4,11 +4,11 @@ using ChatAIze.GenerativeCS.Clients;
 
 namespace ChatAIze.SemanticIndex;
 
-public sealed class SemanticDatabase<T>
+public class SemanticDatabase<T>
 {
-    private readonly ReaderWriterLockSlim _lock = new();
+    protected readonly ReaderWriterLockSlim _lock = new();
 
-    private readonly OpenAIClient _client = new();
+    protected readonly OpenAIClient _client = new();
 
     private List<SemanticRecord<T>> _records = [];
 
@@ -24,7 +24,7 @@ public sealed class SemanticDatabase<T>
         _client = client;
     }
 
-    public async Task AddAsync(T item, CancellationToken cancellationToken = default)
+    public virtual async Task AddAsync(T item, CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(item);
         var embedding = await _client.GetEmbeddingAsync(json, cancellationToken: cancellationToken);
@@ -42,7 +42,7 @@ public sealed class SemanticDatabase<T>
         }
     }
 
-    public IEnumerable<T> Search(float[] embedding, int count = 10)
+    public virtual IEnumerable<T> Search(float[] embedding, int count = 10)
     {
         var results = new SortedList<float, T>();
         _lock.EnterReadLock();
@@ -82,19 +82,19 @@ public sealed class SemanticDatabase<T>
         return results.Values.Reverse();
     }
 
-    public async Task<IEnumerable<T>> SearchAsync(string query, int count = 10, CancellationToken cancellationToken = default)
+    public virtual async Task<IEnumerable<T>> SearchAsync(string query, int count = 10, CancellationToken cancellationToken = default)
     {
         var embedding = await _client.GetEmbeddingAsync(query, cancellationToken: cancellationToken);
         return Search(embedding, count);
     }
 
-    public async Task<IEnumerable<T>> SearchAsync(object query, int count = 10, CancellationToken cancellationToken = default)
+    public virtual async Task<IEnumerable<T>> SearchAsync(object query, int count = 10, CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(query);
         return await SearchAsync(json, count, cancellationToken);
     }
 
-    public void Remove(T item)
+    public virtual void Remove(T item)
     {
         _lock.EnterWriteLock();
 
@@ -108,7 +108,7 @@ public sealed class SemanticDatabase<T>
         }
     }
 
-    public async Task LoadAsync(string filePath, CancellationToken cancellationToken = default)
+    public virtual async Task LoadAsync(string filePath, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filePath);
         var records = await JsonSerializer.DeserializeAsync<List<SemanticRecord<T>>>(stream, cancellationToken: cancellationToken) ?? [];
@@ -125,7 +125,7 @@ public sealed class SemanticDatabase<T>
         }
     }
 
-    public async Task SaveAsync(string filePath, CancellationToken cancellationToken = default)
+    public virtual async Task SaveAsync(string filePath, CancellationToken cancellationToken = default)
     {
         List<SemanticRecord<T>> records;
         _lock.EnterReadLock();
