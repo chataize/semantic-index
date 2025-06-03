@@ -43,6 +43,23 @@ public class SemanticDatabase<T>
         }
     }
 
+    public int Count
+    {
+        get
+        {
+            _lock.EnterReadLock();
+            
+            try
+            {
+                return _records.Count;
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
+    }
+
     public virtual async Task AddAsync(T item, CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(item);
