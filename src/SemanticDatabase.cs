@@ -254,15 +254,31 @@ public class SemanticDatabase<T>
 
     public async Task RefreshEmbeddingsAsync(CancellationToken cancellationToken = default)
     {
+        // Take a snapshot of the items so we don't hold the lock during the network calls
+        List<SemanticRecord<T>> records;
+
+        _lock.EnterReadLock();
+
+        try
+        {
+            records = [.. _records];
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+
+        foreach (var record in records)
+        {
+            var json = JsonSerializer.Serialize(record.Item);
+            record.Embedding = await _client.GetEmbeddingAsync(json, cancellationToken: cancellationToken);
+        }
+
         _lock.EnterWriteLock();
 
         try
         {
-            foreach (var record in _records)
-            {
-                var json = JsonSerializer.Serialize(record.Item);
-                record.Embedding = await _client.GetEmbeddingAsync(json, cancellationToken: cancellationToken);
-            }
+            _records = records;
         }
         finally
         {
