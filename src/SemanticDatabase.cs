@@ -142,13 +142,13 @@ public class SemanticDatabase<T>
         }
     }
 
-    public IEnumerable<T> GetAll()
+    public List<T> GetAll()
     {
         _lock.EnterReadLock();
 
         try
         {
-            return _records.Select(r => r.Item);
+            return [.. _records.Select(r => r.Item)];
         }
         finally
         {
