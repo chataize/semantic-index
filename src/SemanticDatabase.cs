@@ -24,6 +24,8 @@ public class SemanticDatabase<T>
         _client = client;
     }
 
+    public DuplicateHandling DuplicateHandling { get; set; } = DuplicateHandling.Update;
+
     public virtual async Task AddAsync(T item, CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(item);
@@ -34,6 +36,22 @@ public class SemanticDatabase<T>
 
         try
         {
+            if (DuplicateHandling != DuplicateHandling.Allow && _records.Any(r => r.Item!.Equals(item)))
+            {
+                if (DuplicateHandling == DuplicateHandling.Update)
+                {
+                    _records.RemoveAll(r => r.Item!.Equals(item));
+                }
+                else if (DuplicateHandling == DuplicateHandling.Skip)
+                {
+                    return;
+                }
+                else if (DuplicateHandling == DuplicateHandling.Throw)
+                {
+                    throw new InvalidOperationException("Item already exists in the database.");
+                }
+            }
+
             _records.Add(record);
         }
         finally
