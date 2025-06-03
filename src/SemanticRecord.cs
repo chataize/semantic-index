@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace ChatAIze.SemanticIndex;
 
-internal sealed record SemanticRecord<T>
+public record SemanticRecord<T>
 {
     [SetsRequiredMembers]
     public SemanticRecord(T item, float[] embedding)
@@ -11,7 +11,7 @@ internal sealed record SemanticRecord<T>
         Embedding = embedding;
     }
 
-    public required T Item { get; set; }
+    public virtual required T Item { get; set; }
 
-    public required float[] Embedding { get; set; }
+    public virtual required float[] Embedding { get; set; }
 }
