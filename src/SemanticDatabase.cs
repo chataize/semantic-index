@@ -108,6 +108,20 @@ public class SemanticDatabase<T>
         }
     }
 
+    public IEnumerable<T> GetAll()
+    {
+        _lock.EnterReadLock();
+
+        try
+        {
+            return _records.Select(r => r.Item);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
+
     public virtual IEnumerable<T> Search(float[] embedding, int count = 10)
     {
         var results = new SortedList<float, T>();
