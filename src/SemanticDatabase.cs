@@ -223,6 +223,23 @@ public class SemanticDatabase<T>
         }
     }
 
+    public void RemoveRange(IEnumerable<T> items)
+    {
+        _lock.EnterWriteLock();
+
+        try
+        {
+            foreach (var item in items)
+            {
+                _records.RemoveAll(r => r.Item!.Equals(item));
+            }
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
+        }
+    }
+
     public virtual void Clear()
     {
         _lock.EnterWriteLock();
