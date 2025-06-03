@@ -10,7 +10,7 @@ public class SemanticDatabase<T>
 
     protected readonly OpenAIClient _client = new();
 
-    private List<SemanticRecord<T>> _records = [];
+    protected List<SemanticRecord<T>> _records = [];
 
     public SemanticDatabase() { }
 
