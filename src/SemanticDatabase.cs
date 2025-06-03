@@ -60,13 +60,21 @@ public class SemanticDatabase<T>
         }
     }
 
-    public static async Task<SemanticDatabase<T>> FromFileAsync(string filePath, CancellationToken cancellationToken = default)
+    public static async Task<SemanticDatabase<T>> FromFileAsync(string filePath, string? apiKey = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath, nameof(filePath));
 
-        var database = new SemanticDatabase<T>();
-        await database.LoadAsync(filePath, cancellationToken);
+        SemanticDatabase<T> database;
+        if (apiKey is not null)
+        {
+            database = new SemanticDatabase<T>(apiKey);
+        }
+        else
+        {
+            database = new SemanticDatabase<T>();
+        }
 
+        await database.LoadAsync(filePath, cancellationToken);
         return database;
     }
 
