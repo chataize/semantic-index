@@ -100,16 +100,34 @@ public class SemanticDatabase<T>
         return results.Values.Reverse();
     }
 
+    public T? SearchFirst(float[] embedding)
+    {
+        var results = Search(embedding, 1);
+        return results.FirstOrDefault();
+    }
+
     public virtual async Task<IEnumerable<T>> SearchAsync(string query, int count = 10, CancellationToken cancellationToken = default)
     {
         var embedding = await _client.GetEmbeddingAsync(query, cancellationToken: cancellationToken);
         return Search(embedding, count);
     }
 
+    public virtual async Task<T?> SearchFirstAsync(string query, CancellationToken cancellationToken = default)
+    {
+        var results = await SearchAsync(query, 1, cancellationToken);
+        return results.FirstOrDefault();
+    }
+
     public virtual async Task<IEnumerable<T>> SearchAsync(object query, int count = 10, CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(query);
         return await SearchAsync(json, count, cancellationToken);
+    }
+
+    public virtual async Task<T?> SearchFirstAsync(object query, CancellationToken cancellationToken = default)
+    {
+        var results = await SearchAsync(query, 1, cancellationToken);
+        return results.FirstOrDefault();
     }
 
     public virtual void Remove(T item)
