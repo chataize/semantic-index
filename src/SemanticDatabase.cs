@@ -209,6 +209,24 @@ public class SemanticDatabase<T>
         return results.FirstOrDefault();
     }
 
+    public async Task RefreshEmbeddingsAsync(CancellationToken cancellationToken = default)
+    {
+        _lock.EnterWriteLock();
+
+        try
+        {
+            foreach (var record in _records)
+            {
+                var json = JsonSerializer.Serialize(record.Item);
+                record.Embedding = await _client.GetEmbeddingAsync(json, cancellationToken: cancellationToken);
+            }
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
+        }
+    }
+
     public virtual void Remove(T item)
     {
         _lock.EnterWriteLock();
