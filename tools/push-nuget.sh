@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ../src
+cd ../ChatAIze.SemanticIndex
 
 dotnet build
 dotnet publish
