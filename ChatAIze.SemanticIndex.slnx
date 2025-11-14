@@ -1,4 +1,4 @@
 <Solution>
-  <Project Path="src/ChatAIze.SemanticIndex.csproj" />
+  <Project Path="ChatAIze.SemanticIndex/ChatAIze.SemanticIndex.csproj" />
   <Project Path="preview/ChatAIze.SemanticIndex.Preview.csproj" />
 </Solution>
