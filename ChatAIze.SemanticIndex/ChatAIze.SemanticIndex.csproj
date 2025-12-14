@@ -35,8 +35,14 @@
     <None Include="icon.png" Pack="true" PackagePath="\" />
     <None Include="../README.md" Pack="true" PackagePath="" />
   </ItemGroup>
+  <PropertyGroup>
+    <UseLocalChataizeProjects>false</UseLocalChataizeProjects>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="ChatAIze.GenerativeCS" Version="0.15.0" />
+    <PackageReference Include="ChatAIze.GenerativeCS" Version="0.15.0" Condition="'$(UseLocalChataizeProjects)' != 'true'" />
     <PackageReference Include="System.Numerics.Tensors" Version="10.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseLocalChataizeProjects)' == 'true'">
+    <ProjectReference Include="..\..\generative-cs\ChatAIze.GenerativeCS\ChatAIze.GenerativeCS.csproj" />
   </ItemGroup>
 </Project>
