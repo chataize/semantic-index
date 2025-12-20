@@ -40,7 +40,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ChatAIze.GenerativeCS" Version="0.19.0" Condition="'$(UseLocalChataizeProjects)' != 'true'" />
-    <PackageReference Include="System.Numerics.Tensors" Version="10.0.0" />
+    <PackageReference Include="System.Numerics.Tensors" Version="10.0.1" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseLocalChataizeProjects)' == 'true'">
     <ProjectReference Include="..\..\generative-cs\ChatAIze.GenerativeCS\ChatAIze.GenerativeCS.csproj" />
